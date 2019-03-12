@@ -50,5 +50,8 @@ def main():
 
                 if len(valid_ans_entities) >0:#按照合理的格式进行写入文件
                     writer.writerow({'question':' '.join(q_words),'answer':'|'.join(valid_ans_entities)})
-
-
+if __name__ == "__main__":
+    #测试一下组合答案的效果
+    print(get_valid_entities(["monster in law", "they shoot horses", "don't they", "agnes of god"],
+                             set(["monster in law", "they shoot horses don't they",
+                                  "agnes", "agnes of god", "a", "agnes"]), 0))
