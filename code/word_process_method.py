@@ -19,6 +19,7 @@ def clean_word(word):
     word = word.replace('\'', '')
     word = word.replace('?', '')
     word = word.replace('|', '')
+    #word = word.replace(' ','')
     # print(type(word))
     word = word.encode("utf-8")  # Convert str -> unicode (Remember default encoding is ascii in python)
     word = word.decode("utf-8")
@@ -46,5 +47,17 @@ def read_file_as_set(input_path):
             line = (line.split('\n')[0])
             s.add(line)
     return  s
+def get_valid_entities(potiential_ent_set,dictionary,pos):
+    if pos >= len(potiential_ent_set):
+        return  True,[]
+    for i in range(pos,len(potiential_ent_set)):
+        # 对于答案实体进行一个重新组合，来发现是不是存在另外的实体
+        subSequence = " ".join(potiential_ent_set[pos:i+1])
+        if subSequence in dictionary:
+            is_a_valid_split,Seq = get_valid_entities(potiential_ent_set,dictionary,i+1)
+            if is_a_valid_split:
+                Seq.append(subSequence)
+                return True,Seq
+    return False,[]
 if __name__ == '__main__':
     print(clean_word('Reykjavík'))

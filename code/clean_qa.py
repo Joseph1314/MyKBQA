@@ -3,24 +3,14 @@
 """
 import csv
 from word_process_method import *
-input_qa = '../data/movieqa/movieqa/question/full/full_qa_xxx.txt'
-output_qa = '../data/movieqa/clean_qa_xxx.txt'
-def get_valid_entities(potiential_ent_set,dictionary,pos):
-    if pos >= len(potiential_ent_set):
-        return  True,[]
-    for i in range(pos,len(potiential_ent_set)):
-        # 对于答案实体进行一个重新组合，来发现是不是存在另外的实体
-        subSequence = " ".join(potiential_ent_set[pos:i+1])
-        if subSequence in dictionary:
-            is_a_valid_split,Seq = get_valid_entities(potiential_ent_set,dictionary,i+1)
-            if is_a_valid_split:
-                Seq.append(subSequence)
-                return True,Seq
-    return False,[]
+input_qa = '../data/movieqa/movieqa/questions/full/full_qa_dev.txt'
+input_entity = '../data/movieqa/clean_entities.txt'
+output_qa = '../data/movieqa/clean_qa_full_dev.txt'
+
 def main():
-    valid_entites_set = read_file_as_set(input_qa)
-    with open(input_qa,'r') as in_qa_file:
-        with open(output_qa,'w') as out_qa_file:
+    valid_entites_set = read_file_as_set(input_entity)
+    with open(input_qa,'r',encoding='utf-8') as in_qa_file:
+        with open(output_qa,'w',newline='',encoding='utf-8') as out_qa_file:
             writer =  csv.DictWriter(out_qa_file,delimiter='\t',fieldnames=['question','answer'])
             for line in in_qa_file:
                 line = clean_line(line)
@@ -44,14 +34,23 @@ def main():
 
                 #如果没有找到合法的答案实体，尽可能多的选择valid_entity_set中的实体
                 if len(valid_ans_entities) ==0:
+                    #print("empty")
                     for w in ans_ent:
                         if w in valid_entites_set:
+                           #print(w,"find")
                             valid_ans_entities.append(w)
 
                 if len(valid_ans_entities) >0:#按照合理的格式进行写入文件
                     writer.writerow({'question':' '.join(q_words),'answer':'|'.join(valid_ans_entities)})
+
+            print("answer_entity_size",len(valid_ans_entities))
+            print("ok")
+
 if __name__ == "__main__":
     #测试一下组合答案的效果
+    """
     print(get_valid_entities(["monster in law", "they shoot horses", "don't they", "agnes of god"],
                              set(["monster in law", "they shoot horses don't they",
                                   "agnes", "agnes of god", "a", "agnes"]), 0))
+    """
+    main()
