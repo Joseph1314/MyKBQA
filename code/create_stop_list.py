@@ -10,6 +10,7 @@ import argparse
 from sortedcontainers import SortedSet
 from tqdm import tqdm
 Frequency_threshold = 500 #判定为stop word 的频率阈值
+data_name = ['train','test','dev']
 def get_bigram(word_list):
     """
     生成一个句子中的2个词的组合的列表
@@ -24,18 +25,19 @@ def main(args):
     dict = {} # word -> freuency 的一个字典
     stop_list = SortedSet([])
     #这里需要一个循环，来处理三个train ,test dev,的qa_path
-    with open(args.qa_path,'r',encoding='utf-8') as qa_file:
-        reader = csv.DictReader(qa_file,delimiter ='\t',
-                                fieldnames=['question','answer'])
-        for row in tqdm(reader):
-            q_words = row['question']#,row['answer'] 只是提取问题中的stop word
-            q_words = q_words.split(" ")
-            for w in q_words:
-                freq = dict.get(w,0);
-                dict[w]=freq+1
-            for w in get_bigram(q_words):
-                freq = dict.get(w,0)
-                dict[w]=freq+1
+    for name in data_name:
+        with open(args.qa_path.format(data=name),'r',encoding='utf-8') as qa_file:
+            reader = csv.DictReader(qa_file,delimiter ='\t',
+                                    fieldnames=['question','answer'])
+            for row in tqdm(reader):
+                q_words = row['question']#,row['answer'] 只是提取问题中的stop word
+                q_words = q_words.split(" ")
+                for w in q_words:
+                    freq = dict.get(w,0);
+                    dict[w]=freq+1
+                for w in get_bigram(q_words):
+                    freq = dict.get(w,0)
+                    dict[w]=freq+1
     with open(args.doc_path,'r',encoding='utf-8') as doc_file:
         reader = csv.DictReader(doc_file,delimiter='|',fieldnames=['e','fieldname','content'])
         for row in tqdm(reader):
@@ -53,9 +55,9 @@ def main(args):
         for w in stop_list:
             writer.writerow({'word':w,'count':dict[w]})
 if __name__ == "__main__":
-    path="../data/moiveqa/"
+    path="../data/movieqa/"
     parser = argparse.ArgumentParser(description='具体化参数')
-    parser.add_argument('--qa_path',default=path+"clean_qa_full_xxx.txt")
+    parser.add_argument('--qa_path',default=path+"clean_qa_full_{data}.txt")
     parser.add_argument('--doc_path',default=path+"ac_doc.txt")
     parser.add_argument('--stop_list',default=path+"stop_list.txt")
     args = parser.parse_args()
