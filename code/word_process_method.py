@@ -2,6 +2,7 @@
     清洗数据和读取文件等的一些方法
 """
 import unicodedata
+import chardet
 def clean_word(word):
     """
     清洗单词，并且将单词同意转化为小写
@@ -25,8 +26,8 @@ def clean_word(word):
     word = word.decode("utf-8")
     word = unicodedata.normalize('NFKD', word).encode('ascii', 'ignore').decode('ascii')  # Convert normalized unicode to python str
     word = word.lower()  # Don't remove this line, lowercase after the unicode normalization
-    if word== 'Reykjavík':
-        print("ok")
+    word = word.encode("utf-8")  # Convert str -> unicode (Remember default encoding is ascii in python)
+    word = word.decode("utf-8")
     return word
 def clean_line(line):
     """
@@ -60,4 +61,5 @@ def get_valid_entities(potiential_ent_set,dictionary,pos):
                 return True,Seq
     return False,[]
 if __name__ == '__main__':
-    print(clean_word('Reykjavík'))
+    w=clean_word('déjà')
+    print(w)

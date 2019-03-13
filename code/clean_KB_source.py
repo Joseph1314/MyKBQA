@@ -15,11 +15,11 @@ def main(args):
     relation_set =set([])
     entity_set = set([])
     valid_entity_set = read_file_as_set(args.entities)
-    with open( args.kb_source,'r') as kb_file:
+    with open( args.kb_source,'r',encoding='utf-8') as kb_file:
         #进行读写
-        with open(args.out_kb,'w',newline='') as out_kb_file:
+        with open(args.out_kb,'w',newline='',encoding='utf-8') as out_kb_file:
             #out_kb_file是对原文件进行转换格式之后的文件
-            with open(args.out_doc,'w',newline='') as out_doc_file:
+            with open(args.out_doc,'w',newline='',encoding='utf-8') as out_doc_file:
                 #存储的是三元组(subject,relation,object)
                 #可以看做是doc文档类型的kb
                 kb_writer = csv.DictWriter(out_kb_file,delimiter='|',
@@ -48,7 +48,7 @@ def main(args):
                             cur.append(word)
                     e2 = " ".join(cur) #将列表元素用空格连接成一个大的整体元素
                     #先不进行单词的清洗
-                    #e1 = clean_word(e1)
+                    e1 = clean_word(e1)
                     #e2 = clean_word(e2)
                     if r == "has_plot":
                         write_doc(e1,e2,r,valid_entity_set,doc_writer)
@@ -67,7 +67,7 @@ def write_kb(e1,e2s,relation,valid_entity_set,kb_writer,entity_set):
     :param entity_set:
     :return:
     """
-    clean_word(e1)
+    #clean_word(e1)
     entity_set.add(e1)
     #print(e2s)
     for e2 in e2s.split(","):#答案的格式是多个答案中间用逗号隔开 如果不切分，默认答案是多个
@@ -92,7 +92,8 @@ def write_doc(e1,e2s,relation,valid_entity_set,doc_writer):
     """
     #if e1 in valid_entity_set :
     if True:
-        dict = {'entity': e1, 'content': e2s, 'fieldname': relation}#先不对e2s进行清洗 clean_word(e2s)
+        clean_word(e2s)
+        dict = {'entity': e1, 'content': e2s, 'fieldname': relation}#先不对e2s进行清洗
         doc_writer.writerow(dict)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='具体化各个参数')
