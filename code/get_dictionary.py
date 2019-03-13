@@ -29,7 +29,7 @@ def read_kb_file( kb_path):
             add_entity(e1)
             add_entity(e2)
             relations.add(r)
-            relations.add("INV_"+r)#将三元组的逆关系和加入进去
+            relations.add("!_"+r)#将三元组的逆关系和加入进去
 def read_doc_file(doc_path):
     with open(doc_path,'r',encoding='utf-8') as doc_file:
         print("reading doc file...")
