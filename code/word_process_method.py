@@ -2,7 +2,9 @@
     清洗数据和读取文件等的一些方法
 """
 import unicodedata
+import csv
 import chardet
+from tqdm import tqdm
 def clean_word(word):
     """
     清洗单词，并且将单词同意转化为小写
@@ -48,6 +50,18 @@ def read_file_as_set(input_path):
             line = (line.split('\n')[0])
             s.add(line)
     return  s
+def read_file_as_dict(input_path):
+    """
+    读取文件为字典格式
+    :param dictionary:
+    :return:
+    """
+    dict = {}
+    with open(input_path,'r',encoding="utf-8") as input_file:
+        reader = csv.DictReader(input_path,delimiter = '\t',fieldnames=['col1','col2'])
+        for row in tqdm(reader):
+            dict[row['col1']] = int(row['col2'])
+    return dict
 def get_valid_entities(potiential_ent_set,dictionary,pos):
     if pos >= len(potiential_ent_set):
         return  True,[]
