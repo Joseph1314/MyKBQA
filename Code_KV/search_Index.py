@@ -54,7 +54,7 @@ class SearchEng(object):
         question = self.remove_stop_word_from_text(question)
         with self.ix.searcher() as searcher:
             query = QueryParser("content",self.ix.schema,group=qparser.OrGroup).parse(question)
-            res = searcher.search(query,limit)
+            res = searcher.search(query,limit=limit)
             for r in res:
                 results.add(r['entity_name'])
         results = [unicodedata.normalize('NFKD',res).encode('ascii','ignore') for res in results]

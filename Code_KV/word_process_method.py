@@ -60,7 +60,8 @@ def read_file_as_dict(input_path):
     with open(input_path,'r',encoding="utf-8") as input_file:
         reader = csv.DictReader(input_path,delimiter = '\t',fieldnames=['col1','col2'])
         for row in tqdm(reader):
-            dict[row['col1']] = int(row['col2'])
+            if row['col1'] != None and row['col2']!=None:
+                dict[row['col1']] = int(row['col2'])
     return dict
 def get_valid_entities(potiential_ent_set,dictionary,pos):
     if pos >= len(potiential_ent_set):
