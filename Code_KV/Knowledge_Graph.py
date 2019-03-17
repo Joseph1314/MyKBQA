@@ -35,6 +35,8 @@ class KnowledgeGraph(object):
         self.all_entities = set(nx.nodes(self.G))#获取图中的所有顶点
     def get_inverse_relation(self,relation):
         return "!_"+relation
+    def get_entities(self):
+        return self.all_entities
     def get_all_paths(self,source,target,cut_off):
         """
         得到从source节点到target节点的
