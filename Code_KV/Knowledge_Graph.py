@@ -87,6 +87,8 @@ class KnowledgeGraph(object):
         return result
     def get_adjacent_entities(self,node):
         return set(self.G.neighbors(node))
+    def get_high_degree_entities(self):
+        return self.high_degree_nodes
     def get_relation(self,source,target):
         return self.G[source][target]['relation']
 if __name__ =="__main__":
