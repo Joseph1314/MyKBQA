@@ -74,16 +74,19 @@ class KnowledgeGraph(object):
         distance = {start_node:0}
         while len(q) > 0:
             u=q.pop(0)
-            result.add(u)
-            for nbr in self.G.neighbors(u):
-                if nbr in self.high_degree_nodes and avoid_high_degree_nodes:
-                    continue
-                if nbr not in visited :
-                    visited.add(nbr)
-                    distance[nbr]=distance[u]+1
-                    if distance[nbr] <= hops:
-                        q.append(nbr)
-        result.remove(start_node)
+            #需要判断u是否在G中
+            if u in self.G.nodes():
+                result.add(u)
+                for nbr in self.G.neighbors(u):
+                    if nbr in self.high_degree_nodes and avoid_high_degree_nodes:
+                        continue
+                    if nbr not in visited :
+                        visited.add(nbr)
+                        distance[nbr]=distance[u]+1
+                        if distance[nbr] <= hops:
+                            q.append(nbr)
+        if start_node in result:
+            result.remove(start_node)
         return result
     def get_adjacent_entities(self,node):
         return set(self.G.neighbors(node))

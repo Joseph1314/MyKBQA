@@ -11,6 +11,8 @@ def clean_word(word):
     :param word:
     :return:
     """
+    if type(word) == bytes:
+        word = word.decode('utf-8')
     word = word.strip('\n')
     word = word.strip('\r')
     word = word.lower()
@@ -75,6 +77,11 @@ def get_valid_entities(potiential_ent_set,dictionary,pos):
                 Seq.append(subSequence)
                 return True,Seq
     return False,[]
+def get_str_of_nested_seq(paths):
+    result = []
+    for p in paths:
+        result.append(",".join(p))
+    return "|".join(result)
 if __name__ == '__main__':
     w=clean_word('déjà')
     print(w)

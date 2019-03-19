@@ -133,8 +133,9 @@ class QuestionParser(object):#新式类
         """
         q_entities = []
         q_words = question.split(" ")
-
-        for length in tqdm(range(1,len(q_entities)+1)):
+        print(q_words)
+        print("-------------------")
+        for length in tqdm(range(1,len(q_words)+1)):
             i=0
             while i+length <= len(q_words):
                 gen_ent = q_words[i:i+length]#生成的实体

@@ -45,19 +45,19 @@ class SearchEng(object):
         return " ".join(words_clean) if len(words_clean) >0 else content
     def search_doc(self,question,limit=20):
         """
-        搜索并获得result
+        搜索包含问题中的词的三元组doc，返回每个三元组的实体名称
         :param question:
         :param limit: 限制搜索到的结果
         :return:
         """
         results = set([])
-        question = self.remove_stop_word_from_text(question)
+        question = self.remove_stop_word_from_text(question)# " ".join 连接的词列表
         with self.ix.searcher() as searcher:
             query = QueryParser("content",self.ix.schema,group=qparser.OrGroup).parse(question)
             res = searcher.search(query,limit=limit)
             for r in res:
                 results.add(r['entity_name'])
-        results = [unicodedata.normalize('NFKD',res).encode('ascii','ignore') for res in results]
+        results = [unicodedata.normalize('NFKD',res).encode('utf-8','ignore').decode('utf-8') for res in results]
         return results
 if __name__ == "__main__":
     doc_path="../data/movieqa/ac_doc.txt"
