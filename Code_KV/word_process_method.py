@@ -79,8 +79,13 @@ def get_valid_entities(potiential_ent_set,dictionary,pos):
     return False,[]
 def get_str_of_nested_seq(paths):
     result = []
+    #print(paths)
     for p in paths:
+        print("++++")
+        print(p)
         result.append(",".join(p))
+        print(result)
+    #print(result)
     return "|".join(result)
 if __name__ == '__main__':
     w=clean_word('déjà')

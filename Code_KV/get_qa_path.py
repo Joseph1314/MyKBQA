@@ -105,6 +105,7 @@ class EntityExtractor(object):
                         path_of_entities,path_of_relations = sample_paths(path_of_entities,path_of_relations,max_candidate_paths_from_sigle_pair)
                     all_paths_of_entities.extend(path_of_entities)
                     all_paths_of_relations.extend(path_of_relations)
+        print(all_paths_of_entities)
         return all_paths_of_entities,all_paths_of_relations
 def change2str(str):
     """
@@ -193,8 +194,8 @@ def main(args):
                     'nbr_qn_entities': "|".join(change2str(nbr_qn_entities)),
                     'nbr_relevant_entities': "|".join(change2str(nbr_relevant_entities)),
                     'candidate_entities': "|".join(change2str(candidate_entities)),
-                    'path_of_entities': "|".join(get_str_of_nested_seq(all_paths_of_entities)),
-                    'path_of_relations': "|".join(get_str_of_nested_seq(all_paths_of_relations)),
+                    'path_of_entities': get_str_of_nested_seq(all_paths_of_entities),
+                    'path_of_relations': get_str_of_nested_seq(all_paths_of_relations),
                 }
                 writer.writerow(output_row)
         print(("max count candidate entities",max_count_candidate_entities))
