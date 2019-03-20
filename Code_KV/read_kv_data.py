@@ -41,6 +41,8 @@ class DataReader(object):
         self.entity_idx_size = len(entity_idx)
         relation_idx = read_file_as_dict(args.relation_idx)
         self.relation_idx_size=len(relation_idx)
+        idx=read_file_as_dict(args.idx)
+        self.idx = len(idx)
         fields = ['question','qn_entities','ans_entities','sources','relations','targets']
         with open(args.input_examples,'r') as input_examples_file:
             reader = csv.DictReader(input_examples_file,delimiter='\t',fieldnames=fields)
@@ -61,5 +63,41 @@ class DataReader(object):
             vec_examples = []
             for it in tqdm(examples):
                 vec_example = {}
-                #for
+                for key in it.key():
+                    encoder=None
+                    if key == 'question':
+                        encoder=word_idx
+                    elif key == 'relations':
+                        encoder=relation_idx
+                    else :
+                        encoder = entity_idx
+                    if self.share_idx:
+                        encoder=idx
+                    if key == 'ans_entities':
+                        encoder =entity_idx #答案永远是用实体编码!!!
+                    #开始编码
+                    vec_example[key] = [encoder[word] for word in example[key]]
+
+                    if key == 'ans_entities':
+                        # 答案应该是 0-实体数目-1
+                        vec_example[key]= [label -1 for label in vec_example[key]]
+            vec_examples.append(vec_example)
+        self.vec_examples = vec_examples
+    def get_examples(self):
+        """
+        直接返回编码过后的数据集
+        :return:
+        """
+        return self.vec_examples
+    def get_max_lengths(self):
+        return self.maxlen
+    def get_word_idx_size(self):
+        return self.word_idx_size
+    def get_relation_idx_size(self):
+        return self.relation_idx_size
+    def get_entities_size(self):
+        return self.entity_idx_size
+    def get_idx_size(self):
+        return self.idx
+
 
