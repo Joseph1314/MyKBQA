@@ -1,0 +1,355 @@
+	565
+ describe	565
+...	4030
+2	524
+a	38101
+a few	3024
+a film	2374
+a movie	874
+a writer	1613
+about	5620
+act	3117
+act in	3041
+acted	3909
+acted in	3907
+actor	1105
+actor in	1034
+actors	3913
+actors in	1932
+after	1828
+all	985
+american	867
+an	5908
+an actor	1034
+and	14855
+and the	885
+appear	2038
+appear in	2024
+appears	1068
+appears in	1030
+applicable	572
+applicable to	572
+are	6867
+are about	2014
+are applicable	572
+are some	565
+are the	1956
+as	3434
+as director	1019
+at	2181
+author	775
+author of	737
+back	608
+be	3677
+be described	2626
+becomes	577
+between	505
+big	669
+black	765
+boy	666
+but	1667
+by	12221
+by this	709
+by who	1799
+can	5318
+can be	2626
+can you	2220
+city	729
+creator	767
+creator of	752
+date	3756
+date of	3671
+david	651
+day	747
+dead	690
+death	684
+describe	6041
+describe film	1230
+describe movie	1768
+describe the	1154
+described	2634
+described by	2121
+described with	505
+describing	1195
+describing what	581
+did	12444
+direct	2489
+directed	9413
+directed by	3086
+directed the	2962
+directed which	844
+director	10778
+director for	2466
+director of	6710
+director that	1069
+does	4820
+down	541
+during	668
+fall	913
+fall under	643
+falls	503
+family	995
+father	570
+few	3121
+few words	3005
+film	24899
+film did	2462
+film directed	847
+film genre	633
+film is	2496
+film script	752
+film the	3437
+film written	1495
+films	8910
+films are	1003
+films can	1057
+films did	4183
+films does	1021
+films was	810
+find	820
+finds	784
+first	533
+for	12523
+for the	2421
+friends	547
+from	2987
+genre	8815
+genre does	643
+genre for	1835
+genre is	1270
+genre of	5065
+get	681
+girl	1192
+give	1308
+give a	1198
+goes	553
+good	521
+group	610
+has	1749
+have	773
+he	3827
+her	4135
+high	593
+him	1043
+his	7999
+home	627
+house	766
+how	506
+i	852
+in	39461
+in a	2108
+in the	6662
+in which	1032
+into	1316
+is	33248
+is a	2993
+is about	584
+is listed	1019
+is movie	626
+is the	14317
+it	3523
+it released	2372
+john	940
+kind	1370
+kind of	1277
+language	3187
+language in	1069
+language is	1081
+language spoken	1025
+last	821
+life	1796
+listed	1020
+listed as	1019
+little	707
+lives	619
+love	1904
+man	2803
+me	673
+men	711
+michael	651
+movie	23792
+movie did	1631
+movie is	2541
+movie the	3972
+movie written	840
+movies	12030
+movies are	1010
+movies can	1569
+movies did	3636
+movies was	3481
+must	655
+my	987
+name	543
+new	1623
+night	990
+no	574
+not	606
+of	50873
+of a	665
+of film	2489
+of movie	2518
+of the	14503
+of which	804
+old	738
+on	6652
+one	1639
+only	664
+out	1307
+over	520
+people	638
+person	3270
+person directed	1090
+person wrote	1416
+primary	746
+primary language	726
+release	7232
+release date	3671
+release year	3536
+released	9602
+robert	513
+school	561
+screenplay	719
+screenplay for	714
+screenwriter	759
+screenwriter wrote	738
+script	1500
+script for	1490
+she	1632
+small	529
+some	900
+some words	565
+son	525
+sort	1260
+sort of	1241
+spoken	1031
+spoken in	1025
+star	3490
+star in	3179
+starred	5773
+starred in	1950
+starred which	1942
+starred who	1875
+stars	2062
+stars in	1965
+story	2945
+story for	1651
+take	556
+takes	521
+terms	614
+terms are	572
+that	4155
+that 	565
+that directed	1069
+the	116375
+the actors	1932
+the author	737
+the creator	752
+the director	9651
+the film	15189
+the genre	5565
+the language	1025
+the movie	15490
+the primary	726
+the release	7207
+the screenplay	714
+the script	738
+the story	1719
+the world	922
+the writer	5309
+their	2544
+them	560
+they	1673
+this	1629
+this person	709
+three	849
+time	788
+to	16693
+topics	1893
+topics is	1893
+town	601
+two	1735
+type	1199
+type of	1191
+under	997
+up	1485
+war	881
+was	33925
+was directed	1095
+was it	2367
+was the	18590
+was who	1041
+was written	704
+way	579
+what	51111
+what are	565
+what does	3034
+what film	1479
+what films	6164
+what genre	2615
+what is	8003
+what kind	1238
+what language	1081
+what movie	798
+what movies	6641
+what sort	1241
+what terms	572
+what topics	647
+what type	1191
+what was	9480
+what words	1266
+what year	3555
+when	8439
+when was	5964
+where	803
+which	19772
+which actors	1942
+which film	1615
+which films	2708
+which movie	1244
+which movies	5356
+which person	2506
+which screenwriter	738
+which topics	1246
+which words	1822
+while	730
+white	526
+who	36505
+who acted	3907
+who are	1932
+who directed	3312
+who in	736
+who is	7261
+who starred	1951
+who stars	1959
+who was	4448
+who wrote	2918
+whos	1922
+whos the	1869
+wife	615
+will	588
+with	5815
+woman	1318
+words	6700
+words describe	3088
+words describing	1194
+words that	565
+world	1775
+world wrote	736
+write	5700
+write the	1651
+writer	7063
+writer of	5309
+writer on	1613
+written	3821
+written by	3788
+wrote	5819
+wrote the	4159
+year	7495
+year of	3572
+year was	3558
+years	596
+york	510
+you	2869
+you describe	615
+you give	1194
+young	2298
