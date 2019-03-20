@@ -57,8 +57,8 @@ def main(args):
 if __name__ == "__main__":
     path="../data/movieqa/"
     parser = argparse.ArgumentParser(description='具体化参数')
-    parser.add_argument('--qa_path',default=path+"clean_qa_full_{data}.txt")
-    parser.add_argument('--doc_path',default=path+"ac_doc.txt")
-    parser.add_argument('--stop_list',default=path+"stop_list.txt")
+    parser.add_argument('--qa_path',default=path+"clean_wiki_qa_{data}.txt")
+    parser.add_argument('--doc_path',default=path+"clean_wiki_doc.txt")
+    parser.add_argument('--stop_list',default=path+"wiki_stop_list.txt")
     args = parser.parse_args()
     main(args)

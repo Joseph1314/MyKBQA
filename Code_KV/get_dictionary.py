@@ -59,13 +59,13 @@ def write_idx(idx_path,s):
             writer.writerow({'x':x,'count':id})
             id = id+1
 if __name__ == "__main__":
-    dataset = "full"
+    dataset = "wiki"
     path = "../data/movieqa/"
-    tran_path = path+"clean_qa_{name}_train.txt".format(name=dataset)
-    test_path = path+"clean_qa_{name}_test.txt".format(name=dataset)
-    dev_path = path+"clean_qa_{name}_dev.txt".format(name=dataset)
-    kb_path = path+"ac_kb.txt" #.format(name=dataset)
-    doc_path = path+"ac_doc.txt"
+    tran_path = path+"clean_{name}_qa_train.txt".format(name=dataset)
+    test_path = path+"clean_{name}_qa_test.txt".format(name=dataset)
+    dev_path = path+"clean_{name}_qa_dev.txt".format(name=dataset)
+    kb_path = path+"clean_wiki_kb.txt" #.format(name=dataset)
+    doc_path = path+"clean_wiki_doc.txt"
     read_doc_file(doc_path)
     read_kb_file(kb_path)
     read_qa_file(tran_path)

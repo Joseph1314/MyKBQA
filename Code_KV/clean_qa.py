@@ -3,9 +3,9 @@
 """
 import csv
 from word_process_method import *
-input_qa = '../data/movieqa/movieqa/questions/full/full_qa_dev.txt'
+input_qa = '../data/movieqa/movieqa/questions/wiki_entities/wiki-entities_qa_train.txt'
 input_entity = '../data/movieqa/clean_entities.txt'
-output_qa = '../data/movieqa/clean_qa_full_dev.txt'
+output_qa = '../data/movieqa/clean_wiki_qa_train.txt'
 
 def main():
     valid_entites_set = read_file_as_set(input_entity)

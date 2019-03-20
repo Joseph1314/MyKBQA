@@ -87,6 +87,17 @@ def get_str_of_nested_seq(paths):
         print(result)
     #print(result)
     return "|".join(result)
+def extract_dimension_from_tuples_as_list(list_of_tuples,dim):
+    """
+    从元组中提取相应的维度，即从三元组中提取s,r,t的其中之一
+    :param list_of_tuples:
+    :param dim:
+    :return:
+    """
+    result=[]
+    for t in list_of_tuples:
+        result.append(t[dim])
+    return result
 if __name__ == '__main__':
     w=clean_word('déjà')
     print(w)

@@ -56,6 +56,7 @@ def main(args):
                         write_kb(e1,e2,r,valid_entity_set,kb_writer,entity_set)#会在写的过程中补充实体，因为答案answer可能包含多个实体
     print("number of entity",len(entity_set))
     print("number of relation",len(relation_set))
+#def write_ent
 def write_kb(e1,e2s,relation,valid_entity_set,kb_writer,entity_set):
     """
     将三元组写入文件
@@ -97,10 +98,10 @@ def write_doc(e1,e2s,relation,valid_entity_set,doc_writer):
         doc_writer.writerow(dict)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='具体化各个参数')
-    parser.add_argument('--kb_source',help='the raw kb_file',default='../data/movieqa/full_kb.txt')
-    parser.add_argument('--entities',help='the full entities in kb',default='../data/movieqa/entities.txt')
-    parser.add_argument('--out_kb',help='the processed kb_file',default='../data/movieqa/ac_kb.txt')
-    parser.add_argument('--out_doc',help='the processed doc file',default='../data/movieqa/ac_doc.txt')
+    parser.add_argument('--kb_source',help='the raw kb_file',default='../data/movieqa/wiki_entities_kb.txt')
+    parser.add_argument('--entities',help='the full entities in kb',default='../data/movieqa/clean_entities.txt')
+    parser.add_argument('--out_kb',help='te processed kb_file',default='../data/movieqa/clean_wiki_kb.txt')
+    parser.add_argument('--out_doc',help='the processed doc file',default='../data/movieqa/clean_wiki_doc.txt')
     args=parser.parse_args()
     main(args)
 

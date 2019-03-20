@@ -1,5 +1,5 @@
 """
-    生成kv-data
+    读取kv-data
 """
 import csv
 import argparse

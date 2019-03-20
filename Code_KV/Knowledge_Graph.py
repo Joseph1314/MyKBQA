@@ -26,7 +26,7 @@ class KnowledgeGraph(object):
                     #print("kkkkk")
                     self.G.add_edge(e2,e1,relation=self.get_inverse_relation(relation))
                     #print("!->", self.G[e2][e1]['relation'])
-        print("len:",cnt)
+        #print("len:",cnt)
         self.high_degree_nodes = set([])
         indeg = self.G.in_degree()#返回的是元组的形式 two-tuples of (node, in-degree).
         for k,v in indeg:
