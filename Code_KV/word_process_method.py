@@ -98,6 +98,18 @@ def extract_dimension_from_tuples_as_list(list_of_tuples,dim):
     for t in list_of_tuples:
         result.append(t[dim])
     return result
+def pad(arr,Len):
+    """
+    补全
+    :param arr:
+    :param len:
+    :return:
+    """
+    copy_arr = list(arr)
+    if len(copy_arr) <Len:
+        while(len(copy_arr)<Len):
+            copy_arr.append(0)
+    return copy_arr
 if __name__ == '__main__':
     w=clean_word('déjà')
     print(w)
