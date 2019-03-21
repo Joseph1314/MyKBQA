@@ -25,6 +25,12 @@ class KeyValueMemNN(object):
         logits =  self.build_model() #batch * count_entities
 
         #训练部分
+        self.loss_op = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,labels=self.answer))
+        #这里可能涉及到答案有多个，但是预测只有一个的情况
+        self.optimizer = tf.train.AdamOptimizer().minimize(self.loss_op)
+        self.predict_op = tf.argmax(logits,1,name='predict_op')
+        init_op = tf.initialize_all_variables()
+        self.sess.run(init_op)
 
     def build_inputs(self):
         """
@@ -74,4 +80,61 @@ class KeyValueMemNN(object):
             q = [q_0]
             for hop in range(hops):
                 key_emb=tf.nn.embedding_lookup(self.A,self.keys)
-                k = tf.reduce_sum(key_emb,2)
+                k = tf.reduce_sum(key_emb,2)#[batch_size,size_memory,2,embedding_size]
+
+                #应用dropout 在key上
+                one = tf.one([memory_size,1],tf.float32)
+                one_dropout = tf.nn.dropout(one,self.drop_memory,noise_shape=[memory_size,1])
+                q_temp =tf.expand_dim(q[-1],-1) #[batch_size,embedding_size,1]
+                q_temp =tf.transpose(q_temp,[0,2,1]) #[batch_size,1,embedding_size]
+                #进行点乘，对应元素相乘
+                product =k * q_temp # [batch_size,size_memory,embedding_size]
+
+                dotted = tf.reduce_sum(product,2)#[batch_size,size_memory]
+                probs = tf.nn.softmax(dotted) #得到输出的概率，即memory中各个slot的概率
+
+                value_emb = tf.nn.embedding_lookup(self.A,self.values)#[batch_size,size_meomory,embedding_size]
+
+                #应用dropout在value上
+                value_emb_dropout= value_emb*one_dropout
+
+                #消去size_mermory
+                probs_temp = tf.transpose(tf.expand_dims(probs,-1),[0,2,1])#[batch_size,1,size_memory]
+                v_temp = tf.transpose(value_emb_dropout,[0,2,1]) #[batch_size,embedding_size,size_memory]
+                #v_temp * probs_temp ->[batch_size,embedding_size,size_memory]
+                o = v_temp *probs_temp
+                o_k = tf.reduce_sum(o,2) #[batch_size,embedding_size]
+
+                R_k = self.R_list[hop]
+                R_1 = self.R_list[0]
+                q_k = tf.manul(q[-1]+o_k,R_k)
+                q.append(q_k)
+        return tf.matmul(q_k,self.B)#论文中，这里是B*y 然后和q_k进行内积，其中 y 是候选实体集合candidate
+    def batch_fit(self,batch_dict):
+        flags = tf.app.flags
+        dropout_memory = flags.FLAGS.dropout_memory
+        feed_dict = {
+            self.question:batch_dict[QUESTION],
+            self.answer : batch_dict[ANSWER],
+            self.qn_entities:batch_dict[QN_ENTITIES],
+            self.keys:batch_dict[KEYS],
+            self.values:batch_dict[VALUES],
+            self.drop_memory:dropout_memory
+        }
+        #训练
+        self.sess.run(self.optimizer,feed_dict=feed_dict)
+        loss=self.sess.run(self.loss_op,feed_dict=feed_dict)
+        return loss
+    def predict(self,batch_dict):
+        feed_dict = {
+            self.question: batch_dict[QUESTION],
+            self.answer: batch_dict[ANSWER],
+            self.qn_entities: batch_dict[QN_ENTITIES],
+            self.keys: batch_dict[KEYS],
+            self.values: batch_dict[VALUES],
+            self.drop_memory: 1.0
+        }
+        return self.sess.run(self.predict_op,feed_dict=feed_dict)
+    def get_embedding_matrix(self):
+        return self.sess.run(self.A)
+
