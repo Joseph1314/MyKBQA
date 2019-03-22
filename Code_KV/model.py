@@ -83,9 +83,9 @@ class KeyValueMemNN(object):
                 k = tf.reduce_sum(key_emb,2)#[batch_size,size_memory,2,embedding_size]
 
                 #应用dropout 在key上
-                one = tf.one([memory_size,1],tf.float32)
+                one = tf.ones([memory_size,1],tf.float32)
                 one_dropout = tf.nn.dropout(one,self.drop_memory,noise_shape=[memory_size,1])
-                q_temp =tf.expand_dim(q[-1],-1) #[batch_size,embedding_size,1]
+                q_temp =tf.expand_dims(q[-1],-1) #[batch_size,embedding_size,1]
                 q_temp =tf.transpose(q_temp,[0,2,1]) #[batch_size,1,embedding_size]
                 #进行点乘，对应元素相乘
                 product =k * q_temp # [batch_size,size_memory,embedding_size]
@@ -107,7 +107,7 @@ class KeyValueMemNN(object):
 
                 R_k = self.R_list[hop]
                 R_1 = self.R_list[0]
-                q_k = tf.manul(q[-1]+o_k,R_k)
+                q_k = tf.matmul(q[-1]+o_k,R_k)
                 q.append(q_k)
         return tf.matmul(q_k,self.B)#论文中，这里是B*y 然后和q_k进行内积，其中 y 是候选实体集合candidate
     def batch_fit(self,batch_dict):

@@ -124,8 +124,8 @@ def main(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_examples',default=absPath+"clean_wiki_qa_train.txt")
-    parser.add_argument('--output_examples',default=absPath+"wiki_kv_qa_train.txt")
+    parser.add_argument('--input_examples',default=absPath+"clean_wiki_qa_test.txt")
+    parser.add_argument('--output_examples',default=absPath+"wiki_kv_qa_test.txt")
     args =parser.parse_args()
     input_graph = absPath+"clean_wiki_kb.txt"
     input_doc=absPath+"clean_wiki_doc.txt"

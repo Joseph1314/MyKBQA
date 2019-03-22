@@ -33,7 +33,8 @@ def get_maxlen(*paths):
                 maxlen['targets'] = maxlen['sources']
     return maxlen
 class DataReader(object):
-    def __init__(self,args,maxlen,share_idx=True):
+    def __init__(self,args,maxlen,share_idx=True,data_name=None):
+        print("Reading...."+data_name)
         self.share_idx=share_idx
         word_idx = read_file_as_dict(args.word_idx)
         self.word_idx_size = len(word_idx)
@@ -63,8 +64,9 @@ class DataReader(object):
             vec_examples = []
             for it in tqdm(examples):
                 vec_example = {}
-                for key in it.key():
+                for key in it.keys():
                     encoder=None
+
                     if key == 'question':
                         encoder=word_idx
                     elif key == 'relations':
@@ -76,12 +78,14 @@ class DataReader(object):
                     if key == 'ans_entities':
                         encoder =entity_idx #答案永远是用实体编码!!!
                     #开始编码
-                    vec_example[key] = [encoder[word] for word in example[key]]
+                   # assert (it[key] ==None)
+                    vec_example[key] = [encoder[word] for word in it[key]]
 
                     if key == 'ans_entities':
                         # 答案应该是 0-实体数目-1
                         vec_example[key]= [label -1 for label in vec_example[key]]
-            vec_examples.append(vec_example)
+                vec_examples.append(vec_example)
+        print("Finish reading..."+data_name)
         self.vec_examples = vec_examples
     def get_examples(self):
         """

@@ -17,9 +17,9 @@ flags =tf.app.flags
 flags.DEFINE_float("learning_rate",0.01,"learning rate for Adam Optimizer.")
 flags.DEFINE_float("max_grad_norm",40.0,"Clip gradients to this norm.")
 flags.DEFINE_integer("evaluation_interval",5,"Evaluate and print results every x epochs")
-flags.DEFINE_integer("batch_size",8,"Batch size for training.")
+flags.DEFINE_integer("batch_size",32,"Batch size for training.")
 flags.DEFINE_integer("hops",2,"Number of hops in KVMemNN")
-flags.DEFINE_integer("epochs",1000,"Number of epochs to train for")
+flags.DEFINE_integer("epochs",5,"Number of epochs to train for")
 flags.DEFINE_integer("embedding_size",128,"Embedding size for embedding matrix")
 flags.DEFINE_float("dropout_memory",1.0,"keep probability for keeping the memory slots")
 flags.DEFINE_string("checkpoint_dir","checkpoints","checkpoint directory for the model saved")
@@ -36,6 +36,7 @@ ANSWER = "answer"
 KEYS = "keys"
 VALUES = "values"
 
+path="../data/movieqa/"
 def get_single_column_from_batch(batch_examples,maxlen,col_name):
     """
     得到一批样本数据
@@ -47,7 +48,7 @@ def get_single_column_from_batch(batch_examples,maxlen,col_name):
     batch_size = FLAGS.batch_size
     column=[]
     for i in range(batch_size):
-        num_ans = len(batch_examples[i][ANSWER])
+        num_ans = len(batch_examples[i][ANS_ENTITIES])
         example = pad(batch_examples[i][col_name],maxlen[col_name])
         #防止答案有多个，将一对多的问题-答案转换成一对一
         """
@@ -80,7 +81,7 @@ def get_kv_from_batch(batch_examples,maxlen):
         rel = batch_examples[i][RELATIONS]
         tar = batch_examples[i][TARGETS]
 
-        if maxlen[KEYS] > len(example_length):
+        if maxlen[KEYS] >(example_length):
             src = pad(src,maxlen[KEYS])
             rel = pad(rel,maxlen[KEYS])
             tar = pad(tar,maxlen[KEYS])
@@ -90,7 +91,7 @@ def get_kv_from_batch(batch_examples,maxlen):
 
         for index in example_indice_to_pick:
             memories_keys.append(np.array([src[index],rel[index]]))
-            memories_values.append(np.array([tar[index]]))
+            memories_values.append(tar[index])
          #一条QA数据集中的相关三元组已经组成了k-v形式
         # 防止答案有多个，将一对多的问题-答案转换成一对一 需要重复三元组
             """
@@ -100,10 +101,10 @@ def get_kv_from_batch(batch_examples,maxlen):
                 Q->a2
                 Q->a3
             """
-        num_ans = len(batch_examples[i][ANSWER])
+        num_ans = len(batch_examples[i][ANS_ENTITIES])
         for j in range(num_ans):
-            col_key.append(memories_keys)
-            col_value.append(memories_values)
+            col_key.append(np.array(memories_keys))
+            col_value.append(np.array(memories_values))
     return np.array(col_key),np.array(col_value)
 def prepare_batch(batch_example,maxlen):
     batch_size =FLAGS.batch_size
@@ -121,7 +122,7 @@ def prepare_batch(batch_example,maxlen):
     #label answer
     labels =[]
     for i in range(batch_size):
-        for ans in batch_example[i][ANSWER]:
+        for ans in batch_example[i][ANS_ENTITIES]:
             labels.append(ans)
     batch_dict[ANSWER]=np.array(labels)
     return batch_dict
@@ -133,20 +134,95 @@ def save_model(sess):
         os.makedirs(FLAGS.checkpoint_dir)
     save_path = saver.save(sess,os.path.join(FLAGS.checkpoint_dir,"model_kv.ckpt"))
     print("Model saved in file %s"%save_path)
+def get_accuracy(model,examples,maxlen):
+    """
+    得到正确率
+    :param model:
+    :param examples:
+    :param maxlen:
+    :return:
+    """
+    batch_size =FLAGS.batch_size
+    num_example =len(examples)
+    batches = zip(range(0,num_example-batch_size),range(batch_size,num_example))
+    batches = [(start,end) for start,end in batches]
+
+    count_total=0.0
+    count_correct = 0.0
+    for start,end in batches:
+        print("start,end")
+        batch_examples = examples[start:end]
+        batch_dict = prepare_batch(batch_examples,maxlen)
+        prediction = model.predict(batch_dict)
+        for i in range(len(batch_examples)):
+            correct_answer = set(batch_examples[i][ANSWER]) #答案是一个集合
+            if prediction[i] in correct_answer:
+                count_correct = count_correct+1
+            count_total=count_total+1
+    return count_correct/count_total if count_total!=0 else 0
+
 def main(args):
     max_slots =FLAGS.max_slots
-    maxlen = get_maxlen(args.train_examples,args.test_examples,args.dev_examples)
+    maxlen = get_maxlen(args.train_examples,args.test_examples)
     maxlen[KEYS]=min(maxlen[SOURCES],max_slots)
     maxlen[VALUES]=min(maxlen[SOURCES],max_slots)
     assert (maxlen[KEYS]==maxlen[VALUES])
     args.input_examples = args.train_examples
-    train_reader = DataReader(args, maxlen, share_idx=True)
+    train_reader = DataReader(args, maxlen, share_idx=True,data_name="Train_example")
     train_examples = train_reader.get_examples()
 
     args.input_examples = args.test_examples
-    test_reader = DataReader(args, maxlen, share_idx=True)
+    test_reader = DataReader(args, maxlen, share_idx=True,data_name="Test_example")
     test_examples = test_reader.get_examples()
 
-    args.input_examples = args.dev_examples
-    dev_reader = DataReader(args, maxlen, share_idx=True)
-    dev_examples = dev_reader.get_examples()
+    #args.input_examples = args.dev_examples
+    #dev_reader = DataReader(args, maxlen, share_idx=True)
+    #dev_examples = dev_reader.get_examples()
+
+    num_train = len(train_examples)
+    batch_size = FLAGS.batch_size
+    batches = zip(range(0,num_train-batch_size),range(batch_size,num_train))
+    batches = [(start,end) for start,end in batches]
+
+    with tf.Session() as sess:
+        model = KeyValueMemNN(sess,maxlen,train_reader.get_idx_size(),train_reader.get_entities_size())
+        if os.path.exists(os.path.join(FLAGS.checkpoint_dir,"model_kv.ckpt")):
+            saver = tf.train.Saver()
+            save_path = os.path.join(FLAGS.checkpoint_dir,"model_kv.ckpt")
+            saver.restore(sess,save_path)
+            print("Model restored from file %s" % save_path)
+        max_test_accuracy = -1.0
+        for epoch in range(1,FLAGS.epochs+1):
+            np.random.shuffle(batches)
+            for start,end in batches:
+                print(start,end)
+                print("训练了吗？")
+                batch_examples = train_examples[start:end]
+                batch_dict = prepare_batch(batch_examples,maxlen)
+                loss = model.batch_fit(batch_dict)
+                predictions = model.predict(batch_dict)
+                labels = tf.constant(batch_dict[ANSWER],tf.int64)
+                train_accuracy = tf.contrib.metrics.accuracy(predictions, labels)
+                print("EPOCH={epoch}:BATCH_TRAIN_LOSS={class_loss}:BATCH_TRAIN_ACC:{train_acc}". \
+                      format(epoch=epoch, class_loss=loss, train_acc=sess.run(train_accuracy)))
+
+            if epoch > 0 and epoch % FLAGS.evaluation_interval == 0:
+                test_accuracy = get_accuracy(model, test_examples, maxlen)
+                train_accuracy = get_accuracy(model, train_examples, maxlen)
+                if test_accuracy > max_test_accuracy:
+                    save_model(sess)
+                    max_test_accuracy = test_accuracy
+                print("EPOCH={epoch}:TEST_ACCURACY={test_accuracy}:TRAIN_ACCURACY={train_accuracy}:BEST_ACC={best_acc}". \
+                      format(epoch=epoch, test_accuracy=test_accuracy, train_accuracy=train_accuracy,
+                             best_acc=max_test_accuracy))
+if __name__ =="__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--train_examples', default=path+"wiki_kv_qa_train.txt")
+    parser.add_argument('--test_examples', default=path+"wiki_kv_qa_test.txt")
+    #parser.add_argument('--dev_examples', help='the dev file', required=True)
+    parser.add_argument('--word_idx', help='word vocabulary', default=path+"wiki_word_idx.txt")
+    parser.add_argument('--entity_idx', help='entity vocabulary', default=path+"wiki_entity_idx.txt")
+    parser.add_argument('--relation_idx', help='relation vocabulary', default=path+"wiki_relation_idx.txt")
+    parser.add_argument('--idx', help='overall vocabulary', default=path+"wiki_idx.txt")
+    args = parser.parse_args()
+    main(args)

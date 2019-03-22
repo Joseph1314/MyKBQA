@@ -60,7 +60,7 @@ def read_file_as_dict(input_path):
     """
     dict = {}
     with open(input_path,'r',encoding="utf-8") as input_file:
-        reader = csv.DictReader(input_path,delimiter = '\t',fieldnames=['col1','col2'])
+        reader = csv.DictReader(input_file,delimiter = '\t',fieldnames=['col1','col2'])
         for row in tqdm(reader):
             if row['col1'] != None and row['col2']!=None:
                 dict[row['col1']] = int(row['col2'])
