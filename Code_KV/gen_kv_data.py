@@ -88,10 +88,10 @@ def main(args):
                 nbr_qn_entities =get_neighboring_entities(qn_entities,num_hops=Hops_From_Qn_Entities)
 
                 #relevant_entities 表示从doc文档中查找相关的实体
-                relevant_entities=search_index.search_doc(question,limit=Max_Relevant_Entities)
+                #relevant_entities=search_index.search_doc(question,limit=Max_Relevant_Entities)
 
                 #聚合从问题中提取出来的候选实体
-                candidate_entities = qn_entities.union(nbr_qn_entities,relevant_entities)
+                candidate_entities = qn_entities.union(nbr_qn_entities)#,relevant_entities)
                 #如果候选实体过大，进行随机缩减
                 if len(candidate_entities) > Max_Candidate_Entities:
                     candidate_entities =set(random.sample(candidate_entities,Max_Candidate_Entities))
@@ -109,7 +109,7 @@ def main(args):
 
                 output_raw={
                     'question':question,
-                    'qn_entities':"|".join(qn_entities),
+                    'qn_entities':"|".join(candidate_entities),
                     'ans_entities':"|".join(ans_entities),
                     'sources':"|".join(sources),
                     'relations':"|".join(relations),

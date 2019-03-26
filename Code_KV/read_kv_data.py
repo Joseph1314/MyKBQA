@@ -9,7 +9,6 @@ import numpy as np
 from word_process_method import *
 from collections import defaultdict
 from tqdm import tqdm
-
 def get_maxlen(*paths):
     maxlen =defaultdict(int)
     for path in paths:
@@ -44,6 +43,7 @@ class DataReader(object):
         self.relation_idx_size=len(relation_idx)
         idx=read_file_as_dict(args.idx)
         self.idx = len(idx)
+        encoder = idx
         fields = ['question','qn_entities','ans_entities','sources','relations','targets']
         with open(args.input_examples,'r') as input_examples_file:
             reader = csv.DictReader(input_examples_file,delimiter='\t',fieldnames=fields)
@@ -58,32 +58,33 @@ class DataReader(object):
                 example['sources'] = row['sources'].split("|")
                 example['relations'] = row['relations'].split("|")
                 example['targets']  = row['targets'].split("|")
-
                 self.num_examples +=1
                 examples.append(example)
             vec_examples = []
             for it in tqdm(examples):
                 vec_example = {}
                 for key in it.keys():
-                    encoder=None
-
-                    if key == 'question':
+                    """if key == 'question':
                         encoder=word_idx
                     elif key == 'relations':
                         encoder=relation_idx
                     else :
                         encoder = entity_idx
+                    """
                     if self.share_idx:
                         encoder=idx
-                    if key == 'ans_entities':
-                        encoder =entity_idx #答案永远是用实体编码!!!
-                    #开始编码
-                   # assert (it[key] ==None)
-                    vec_example[key] = [encoder[word] for word in it[key]]
 
                     if key == 'ans_entities':
+                        encoder =entity_idx #答案永远是用实体编码!!!
+
+                    #开始编码
+                    vec_example[key]=[encoder[w]-1 for w in it[key]]
+
+
+                    #if key == 'ans_entities':
                         # 答案应该是 0-实体数目-1
-                        vec_example[key]= [label -1 for label in vec_example[key]]
+                    #    vec_example[key]= [label -1 for label in vec_example[key]]
+
                 vec_examples.append(vec_example)
         print("Finish reading..."+data_name)
         self.vec_examples = vec_examples

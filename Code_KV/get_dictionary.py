@@ -13,6 +13,7 @@ words = set([]) #单词级别
 entities = set([])
 relations = set([])
 all = set([])
+top_k = 0 #记录答案的最多数目
 def add_entity(entity):
     entities.add(entity)
     for w in entity.split(" "):
@@ -41,17 +42,25 @@ def read_doc_file(doc_path):
             relations.add("!_"+rel)
             add_sentence(desc)
 def read_qa_file(qa_path):
+    global top_k
     with open(qa_path,'r',encoding='utf-8') as qa_file:
         print("reading qa file ...")
         reader = csv.DictReader(qa_file,delimiter='\t',fieldnames=['q','a'])
         for row in tqdm(reader):
             q,a = row['q'],row['a']
             add_sentence(q)
-            for e in a.split("|"):
+            aa=a.split("|")
+            top_k = max(top_k,len(aa))
+            for e in aa:
                 add_entity(e)
-def write_idx(idx_path,s):
+def write_idx(idx_path,s,write_num=None):
     print("writing ",idx_path," ...")
-    ordered_set = sorted(s)#排序
+    #添加问题编号
+    if write_num:
+        for i in range(0,top_k):
+            qa_num = "@{no}".format(no=i)
+            s.add(qa_num)
+    ordered_set = sorted(s)  # 排序
     id=1
     with open(idx_path,'w',newline='',encoding='utf-8') as idx_file:
         writer  = csv.DictWriter(idx_file,delimiter='\t',fieldnames=['x','count'])
@@ -75,4 +84,4 @@ if __name__ == "__main__":
     write_idx(path + "{name}_entity_idx.txt".format(name=dataset), entities)
     write_idx(path + "{name}_relation_idx.txt".format(name=dataset), relations)
     all = all.union(words,entities,relations)
-    write_idx(path + "{name}_idx.txt".format(name=dataset), all)
+    write_idx(path + "{name}_idx.txt".format(name=dataset), all,write_num=True)

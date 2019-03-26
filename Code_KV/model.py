@@ -16,7 +16,7 @@ VALUES = "values"
 class KeyValueMemNN(object):
     def __init__(self,sess,size,idx_size,entity_idx_size):
         self.sess = sess
-        self.size =size
+        self.size =size#maxlen
         self.vocab_size=idx_size
         self.count_entities =entity_idx_size
         self.name="KeyValueMemNN"
@@ -25,10 +25,13 @@ class KeyValueMemNN(object):
         logits =  self.build_model() #batch * count_entities
 
         #训练部分
-        self.loss_op = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits,labels=self.answer))
+        #self.loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits,labels=self.answer))
+        self.loss_op = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=self.answer))
         #这里可能涉及到答案有多个，但是预测只有一个的情况
         self.optimizer = tf.train.AdamOptimizer().minimize(self.loss_op)
-        self.predict_op = tf.argmax(logits,1,name='predict_op')
+        self.predict_op = tf.argmax(logits,1,name='predict_op')#logits是最后的输出
+       # with tf.name_scope("accuracy"):
+
         init_op = tf.initialize_all_variables()
         self.sess.run(init_op)
 
@@ -39,7 +42,7 @@ class KeyValueMemNN(object):
         """
         flags=tf.app.flags
         batch_size = flags.FLAGS.batch_size
-        self.question = tf.placeholder(tf.int32,[None,self.size[QUESTION]],name="question")
+        self.question = tf.placeholder(tf.int32,[None,self.size[QUESTION]+1],name="question")
         self.qn_entities =tf.placeholder(tf.int32,[None,self.size[QN_ENTITIES]],name="qn_entities")
         self.answer = tf.placeholder(tf.int32,shape=[None],name="answer")
         self.keys= tf.placeholder(tf.int32,[None,self.size[KEYS],2],name="keys")
@@ -58,9 +61,10 @@ class KeyValueMemNN(object):
             nil_word_slot = tf.constant(np.zeros([1,embedding_size]),dtype=tf.float32)
             initializer = tf.contrib.layers.xavier_initializer()
 
-            E = tf.Variable(initializer([self.vocab_size,embedding_size]),name='E')
-            self.A=tf.concat([nil_word_slot,E],axis=0) #vocab_size+1 *embedding_size
-            self.B=tf.Variable(initializer([embedding_size,self.count_entities]),name='B')
+            #E = tf.Variable(initializer([self.vocab_size,embedding_size]),name='E')
+            self.A=tf.Variable(initializer([self.vocab_size,embedding_size]),name='A') #vocab_size *embedding_size
+            #self.B=tf.Variable(initializer([self.vocab_size+1,embedding_size]),name='B')
+            self.B = tf.Variable(initializer([embedding_size, self.count_entities]), name='B')
             self.R_list=[]
             for k in range(hops):
                 R_k = tf.Variable(initializer([embedding_size,embedding_size]),name='H')
@@ -107,9 +111,15 @@ class KeyValueMemNN(object):
 
                 R_k = self.R_list[hop]
                 R_1 = self.R_list[0]
-                q_k = tf.matmul(q[-1]+o_k,R_k)
+                q_k = tf.matmul(q[-1]+o_k,R_k)#[batch_size,embedding_size]
                 q.append(q_k)
-        return tf.matmul(q_k,self.B)#论文中，这里是B*y 然后和q_k进行内积，其中 y 是候选实体集合candidate
+        # B:[embedding_size,entity_size]
+        # qn_entity[batch_size,size_qn_entity]
+        # -> y_emb[batch_size,size_qn_entity,embedding]
+        #y_emb = tf.nn.embedding_lookup(self.B, self.qn_entities)
+        #y = tf.reduce_sum(y_emb, 1)  # [batch_size,embedding_size]
+        #return q_k*y#论文中，这里是B*y 然后和q_k进行内积，其中 y 是候选实体集合candidate
+        return tf.matmul(q_k,self.B)#[batch_size,entity_size]
     def batch_fit(self,batch_dict):
         flags = tf.app.flags
         dropout_memory = flags.FLAGS.dropout_memory
