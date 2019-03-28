@@ -115,6 +115,15 @@ def main(args):
                     'relations':"|".join(relations),
                     'targets':"|".join(targets)
                 }
+                ans_set = set(targets)
+                cnt=0
+                total=0
+                for q in ans_set :
+                   if q in ans_entities:
+                        cnt=cnt+1
+                   total=total+1
+                   print(float(cnt/total))
+                print("final:",float(cnt / total))
                 writer.writerow(output_raw)
                 print("ok----",id)
 

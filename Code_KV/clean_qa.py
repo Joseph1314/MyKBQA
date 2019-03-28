@@ -3,9 +3,9 @@
 """
 import csv
 from word_process_method import *
-input_qa = '../data/movieqa/movieqa/questions/wiki_entities/wiki-entities_qa_train.txt'
+input_qa = '../data/movieqa/movieqa/questions/wiki_entities/wiki-entities_qa_dev.txt'
 input_entity = '../data/movieqa/clean_entities.txt'
-output_qa = '../data/movieqa/clean_wiki_qa_train.txt'
+output_qa = '../data/movieqa/clean_wiki_qa_dev.txt'
 
 def main():
     valid_entites_set = read_file_as_set(input_entity)
@@ -41,6 +41,7 @@ def main():
                             valid_ans_entities.append(w)
 
                 if len(valid_ans_entities) >0:#按照合理的格式进行写入文件
+                    valid_ans_entities.sort()
                     writer.writerow({'question':' '.join(q_words),'answer':'|'.join(valid_ans_entities)})
 
             print("answer_entity_size",len(valid_ans_entities))

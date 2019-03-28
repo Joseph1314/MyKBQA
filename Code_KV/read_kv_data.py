@@ -9,6 +9,7 @@ import numpy as np
 from word_process_method import *
 from collections import defaultdict
 from tqdm import tqdm
+path="../data/movieqa/"
 def get_maxlen(*paths):
     maxlen =defaultdict(int)
     for path in paths:
@@ -104,5 +105,19 @@ class DataReader(object):
         return self.entity_idx_size
     def get_idx_size(self):
         return self.idx
+#测试一下候选集中的实体是否在能够命中答案集合
+if __name__ =="__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--train_examples', default=path + "wiki_small_qa_train.txt")
+    parser.add_argument('--test_examples', default=path + "wiki_kv_qa_test.txt")
+    # parser.add_argument('--dev_examples', help='the dev file', required=True)
+    parser.add_argument('--word_idx', help='word vocabulary', default=path + "wiki_word_idx.txt")
+    parser.add_argument('--entity_idx', help='entity vocabulary', default=path + "wiki_entity_idx.txt")
+    parser.add_argument('--relation_idx', help='relation vocabulary', default=path + "wiki_relation_idx.txt")
+    parser.add_argument('--idx', help='overall vocabulary', default=path + "wiki_idx.txt")
+    args=parser.parse_args()
+    maxlen=get_maxlen(args.train_examples,args.test_examples)
+    reader = DataReader(args,maxlen)
+    data = reader.get_examples()
 
 

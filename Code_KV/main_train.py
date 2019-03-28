@@ -21,7 +21,7 @@ flags.DEFINE_integer("batch_size",10,"Batch size for training.")
 flags.DEFINE_integer("hops",2,"Number of hops in KVMemNN")
 flags.DEFINE_integer("epochs",5,"Number of epochs to train for")
 flags.DEFINE_integer("embedding_size",200,"Embedding size for embedding matrix")
-flags.DEFINE_float("dropout_memory",1.0,"keep probability for keeping the memory slots")
+flags.DEFINE_float("dropout_memory",1,"keep probability for keeping the memory slots")
 flags.DEFINE_string("checkpoint_dir","checkpoints","checkpoint directory for the model saved")
 flags.DEFINE_integer("max_slots",64,"maximum slots in the memory")
 
@@ -38,7 +38,7 @@ VALUES = "values"
 
 path="../data/movieqa/"
 encoder ={}
-def get_single_column_from_batch(batch_examples,maxlen,col_name):
+def get_single_column_from_batch(batch_examples,maxlen,col_name,test_data=False):
     """
     得到一批样本数据
     :param batch_examples:
@@ -65,9 +65,10 @@ def get_single_column_from_batch(batch_examples,maxlen,col_name):
         for j in range(num_ans):
             num = "@{no}".format(no=j)
             tmp_example = example[:]
-            if col_name == QUESTION:
-                tmp_example.append(encoder[num])
+            if col_name == QUESTION and test_data == False:
+                tmp_example.append(encoder[num]-1)
             column.append(np.array(tmp_example))
+    #print("problems:",len(column))
     return np.array(column)
 def get_kv_from_batch(batch_examples,maxlen):
     """
@@ -114,11 +115,11 @@ def get_kv_from_batch(batch_examples,maxlen):
             col_key.append(np.array(memories_keys))
             col_value.append(np.array(memories_values))
     return np.array(col_key),np.array(col_value)
-def prepare_batch(batch_example,maxlen,entity_size=None):
+def prepare_batch(batch_example,maxlen,test_data=False):
     batch_size =FLAGS.batch_size
     batch_dict={}
     batch_dict[QUESTION]=get_single_column_from_batch(batch_example,maxlen,QUESTION)
-    batch_dict[QN_ENTITIES]=get_single_column_from_batch(batch_example,maxlen,QN_ENTITIES)
+    batch_dict[QN_ENTITIES]=get_single_column_from_batch(batch_example,maxlen,QN_ENTITIES,test_data=test_data)
 
     #这三条可能没有用，之后删
     batch_dict[SOURCES]=get_single_column_from_batch(batch_example,maxlen,SOURCES)
@@ -143,7 +144,7 @@ def prepare_batch(batch_example,maxlen,entity_size=None):
             labels.append(ans)
 
 
-    #labels.sort()
+    #labels.sort()#这里好像排序之后就不能收敛了
     batch_dict[ANSWER]=np.array(labels)
     return batch_dict
 
@@ -170,20 +171,21 @@ def get_accuracy(model,examples,maxlen):
     count_total=0.0
     count_correct = 0.0
     id=1
-    for start,end in batches:
-        #print("start,end")
-        if id >200:
+    for start, end in batches:
+        # print("start,end")
+        if id > 100:
             break
-        id = id +1
+        id = id + 1
         batch_examples = examples[start:end]
-        batch_dict = prepare_batch(batch_examples,maxlen)
+        batch_dict = prepare_batch(batch_examples, maxlen)
         prediction = model.predict(batch_dict)
         for i in range(len(batch_examples)):
-            correct_answer = set(batch_examples[i][ANS_ENTITIES]) #答案是一个集合
+            correct_answer = set(batch_examples[i][ANS_ENTITIES])  # 答案是一个集合
             if prediction[i] in correct_answer:
-                count_correct = count_correct+1
-            count_total=count_total+1
-    return count_correct/count_total if count_total!=0 else 0
+                count_correct = count_correct + 1
+            count_total = count_total + 1
+            print(float(count_correct / count_total))
+    return float(count_correct / count_total) if count_total != 0 else 0
 
 def main(args):
     global encoder
@@ -214,7 +216,7 @@ def main(args):
     config.gpu_options.per_process_gpu_memory_fraction = 0.5
     config.gpu_options.allow_growth = True
     with tf.Session(config=config) as sess:
-        model = KeyValueMemNN(sess,maxlen,train_reader.get_idx_size(),train_reader.get_entities_size())
+        model = KeyValueMemNN(sess,maxlen,train_reader.get_idx_size(),train_reader.get_entities_size(),learning_rate=FLAGS.learning_rate)
         if os.path.exists(os.path.join(FLAGS.checkpoint_dir,"model_kv.ckpt")):
             saver = tf.train.Saver()
             save_path = os.path.join(FLAGS.checkpoint_dir,"model_kv.ckpt")
@@ -225,8 +227,6 @@ def main(args):
             np.random.shuffle(batches)
             step=1
             for start,end in batches:
-                #print(start,end)
-                #print("训练了吗？")
                 batch_examples = train_examples[start:end]
                 batch_dict = prepare_batch(batch_examples,maxlen,entity_size)
                 loss = model.batch_fit(batch_dict)
@@ -240,13 +240,12 @@ def main(args):
                 step =step+1
                 if epoch > 0 and step % FLAGS.evaluation_interval == 0:
                     test_accuracy = get_accuracy(model, test_examples, maxlen)
-                    train_accuracy = get_accuracy(model, train_examples, maxlen)
+                    #train_accuracy = get_accuracy(model, train_examples, maxlen)
                     if test_accuracy > max_test_accuracy:
                         save_model(sess)
                         max_test_accuracy = test_accuracy
-                    print("----------EPOCH={epoch}:TEST_ACCURACY={test_accuracy}:TRAIN_ACCURACY={train_accuracy}:BEST_ACC={best_acc}". \
-                          format(epoch=epoch, test_accuracy=test_accuracy, train_accuracy=train_accuracy,
-                                 best_acc=max_test_accuracy))
+                    print("Evaluate:EPOCH={epoch}:TEST_ACCURACY={test_accuracy}:BEST_ACC={best_acc}". \
+                          format(epoch=epoch, test_accuracy=(test_accuracy),best_acc=max_test_accuracy))
 if __name__ =="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_examples', default=path+"wiki_small_qa_train.txt")

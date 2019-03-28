@@ -14,7 +14,7 @@ ANSWER = "answer"
 KEYS = "keys"
 VALUES = "values"
 class KeyValueMemNN(object):
-    def __init__(self,sess,size,idx_size,entity_idx_size):
+    def __init__(self,sess,size,idx_size,entity_idx_size,learning_rate):
         self.sess = sess
         self.size =size#maxlen
         self.vocab_size=idx_size
@@ -65,6 +65,8 @@ class KeyValueMemNN(object):
             self.A=tf.Variable(initializer([self.vocab_size,embedding_size]),name='A') #vocab_size *embedding_size
             #self.B=tf.Variable(initializer([self.vocab_size+1,embedding_size]),name='B')
             self.B = tf.Variable(initializer([embedding_size, self.count_entities]), name='B')
+            #加入bias
+            self.bias =tf.Variable(tf.constant(0.1,tf.float32,[self.count_entities]),name='bias')
             self.R_list=[]
             for k in range(hops):
                 R_k = tf.Variable(initializer([embedding_size,embedding_size]),name='H')
@@ -119,7 +121,9 @@ class KeyValueMemNN(object):
         #y_emb = tf.nn.embedding_lookup(self.B, self.qn_entities)
         #y = tf.reduce_sum(y_emb, 1)  # [batch_size,embedding_size]
         #return q_k*y#论文中，这里是B*y 然后和q_k进行内积，其中 y 是候选实体集合candidate
-        return tf.matmul(q_k,self.B)#[batch_size,entity_size]
+        #with tf.name_scope("output"):
+         #   logits = tf.nn.dropout(tf.matmul(q_k,self.B),keep_prob=self.drop_memory)
+        return tf.matmul(q_k,self.B) #[batch_size,entity_size]
     def batch_fit(self,batch_dict):
         flags = tf.app.flags
         dropout_memory = flags.FLAGS.dropout_memory
