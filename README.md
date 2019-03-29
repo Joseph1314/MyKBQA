@@ -79,3 +79,11 @@ Q->A3
 
 4.自己可能对于embedding的理解还不是很好，再去补充一些相关的知识，加深一下认识。目前总感觉将整个语料的表示通过一个embedding的矩阵表示有局限性，毕竟有可能训练集的数据可能不覆盖全部的实体或者训练很大数据集的开销特别大。
 
+---------------------------------------------------------------------------------------------------------------------------------------
+(2019.3.29更新）
+今天看到之前讲embedding模型做KBQA的论文，里面的方法和自己想的不谋而合，这是独立思考问题所带来的快乐
+下面是论文里的原话:
+"To handle multiple answer, we instead present the results as a ranked list, rather
+than taking the top prediction, and evaluate that instead.
+"
+
