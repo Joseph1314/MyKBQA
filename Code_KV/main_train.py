@@ -24,7 +24,7 @@ flags.DEFINE_integer("embedding_size",200,"Embedding size for embedding matrix")
 flags.DEFINE_float("dropout_memory",1,"keep probability for keeping the memory slots")
 flags.DEFINE_string("checkpoint_dir","checkpoints","checkpoint directory for the model saved")
 flags.DEFINE_integer("max_slots",64,"maximum slots in the memory")
-
+flags.DEFINE_float("l2_lamda",0,"l2 lamda parameter for the L2 regulation")
 FLAGS =flags.FLAGS
 QUESTION = "question"
 QN_ENTITIES = "qn_entities"
@@ -187,6 +187,39 @@ def get_accuracy(model,examples,maxlen):
             print(float(count_correct / count_total))
     return float(count_correct / count_total) if count_total != 0 else 0
 
+def get_accuracy_C(model,examples,maxlen):
+    """
+    测试一个批处理的测试集的正确率
+    :param model:
+    :param examples:
+    :param maxlen:
+    :return:
+    """
+    batch_size =FLAGS.batch_size
+    num_example =len(examples)
+    batches = zip(range(0,num_example-batch_size),range(batch_size,num_example))
+    batches = [(start,end) for start,end in batches]
+
+    count_total=0.0
+    count_correct = 0.0
+    id=1
+    acc = 0.00
+    with tf.Session() as sess:
+
+        for start, end in batches:
+            # print("start,end")
+            if id > 10:
+                break
+            id = id + 1
+            batch_examples = examples[start:end]
+            batch_dict = prepare_batch(batch_examples, maxlen)
+            predictions = model.predict(batch_dict)
+            labels = tf.constant(batch_dict[ANSWER], tf.int64)
+            train_accuracy = tf.contrib.metrics.accuracy(predictions, labels)
+            tran_acc = sess.run(train_accuracy)
+            print(tran_acc)
+            acc = max(acc,tran_acc)
+    return  float(acc)
 def main(args):
     global encoder
     max_slots =FLAGS.max_slots
@@ -216,7 +249,7 @@ def main(args):
     config.gpu_options.per_process_gpu_memory_fraction = 0.5
     config.gpu_options.allow_growth = True
     with tf.Session(config=config) as sess:
-        model = KeyValueMemNN(sess,maxlen,train_reader.get_idx_size(),train_reader.get_entities_size(),learning_rate=FLAGS.learning_rate)
+        model = KeyValueMemNN(sess,maxlen,train_reader.get_idx_size(),train_reader.get_entities_size(),learning_rate=FLAGS.learning_rate,l2_lamda=FLAGS.l2_lamda)
         if os.path.exists(os.path.join(FLAGS.checkpoint_dir,"model_kv.ckpt")):
             saver = tf.train.Saver()
             save_path = os.path.join(FLAGS.checkpoint_dir,"model_kv.ckpt")
@@ -248,7 +281,7 @@ def main(args):
                           format(epoch=epoch, test_accuracy=(test_accuracy),best_acc=max_test_accuracy))
 if __name__ =="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_examples', default=path+"wiki_small_qa_train.txt")
+    parser.add_argument('--train_examples', default=path+"wiki_kv_qa_train.txt")
     parser.add_argument('--test_examples', default=path+"wiki_kv_qa_test.txt")
     #parser.add_argument('--dev_examples', help='the dev file', required=True)
     parser.add_argument('--word_idx', help='word vocabulary', default=path+"wiki_word_idx.txt")

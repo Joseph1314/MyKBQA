@@ -45,11 +45,12 @@ def partition_data(input_path,output_path,percentage):
             out_row={
                 QUESTION:line[QUESTION],
                 QN_ENTITIES:line[QN_ENTITIES],
-                ANS_ENTITIES:line[ANS_ENTITIES],
+                ANS_ENTITIES:line[ANS_ENTITIES
+                ],
                 SOURCES:line[SOURCES],
                 RELATIONS:line[RELATIONS],
                 TARGETS:line[TARGETS]
             }
             writer.writerow(out_row)
 if __name__ =="__main__":
-    partition_data(input_path,output_path,0.08)
+    partition_data(input_path,output_path,0.1)

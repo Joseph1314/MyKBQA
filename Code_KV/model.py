@@ -13,22 +13,50 @@ TARGETS = "targets"
 ANSWER = "answer"
 KEYS = "keys"
 VALUES = "values"
+
+def position_encoding(sentences_ize,embedding_size):
+    """
+    对问题的input加入位置编码PE
+    :param sentence_size:
+    :param embedding_size:
+    :return:
+    """
+    encoding = np.ones((embedding_size,sentences_ize),dtype=np.float32)
+    ls = sentences_ize +1
+    le = embedding_size+1
+    for i in range(1,le):
+        for j in range(1,ls):
+            encoding[i-1,j-1] = (i-(le-1)/2) * (j-(ls-1)/2)
+    encoding = 1 + 4*encoding/embedding_size/sentences_ize
+    return np.transpose(encoding)
+
+
 class KeyValueMemNN(object):
-    def __init__(self,sess,size,idx_size,entity_idx_size,learning_rate):
+    def __init__(self,sess,size,idx_size,entity_idx_size,learning_rate,l2_lamda=None):
         self.sess = sess
         self.size =size#maxlen
         self.vocab_size=idx_size
         self.count_entities =entity_idx_size
         self.name="KeyValueMemNN"
+        flags = tf.app.flags
+        self.encoding= tf.constant(position_encoding(self.size[QUESTION]+1,flags.FLAGS.embedding_size),name="encoding")
         self.build_inputs()
         self.build_params()
         logits =  self.build_model() #batch * count_entities
 
         #训练部分
         #self.loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits,labels=self.answer))
-        self.loss_op = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=self.answer))
+        _loss_op = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=self.answer))
+        with tf.name_scope("loss"):
+            if l2_lamda :
+                #加入L2正则化
+                vars = tf.trainable_variables()
+                lossL2=tf.add_n([tf.nn.l2_loss(v) for v in vars])
+                self.loss_op=_loss_op + l2_lamda*lossL2
+            else :
+                self.loss_op=_loss_op
         #这里可能涉及到答案有多个，但是预测只有一个的情况
-        self.optimizer = tf.train.AdamOptimizer().minimize(self.loss_op)
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self.loss_op)
         self.predict_op = tf.argmax(logits,1,name='predict_op')#logits是最后的输出
        # with tf.name_scope("accuracy"):
 
@@ -82,7 +110,7 @@ class KeyValueMemNN(object):
             # question[batch_size,size_question]
             # -> q_emb[batch_size,size_question,embedding]
             q_emb = tf.nn.embedding_lookup(self.A,self.question)
-            q_0 = tf.reduce_sum(q_emb,1) # [batch_size,embedding]
+            q_0 = tf.reduce_sum(q_emb*self.encoding,1) # [batch_size,embedding]
             q = [q_0]
             for hop in range(hops):
                 key_emb=tf.nn.embedding_lookup(self.A,self.keys)
